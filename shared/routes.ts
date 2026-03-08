@@ -55,6 +55,14 @@ export const api = {
     404: errorSchemas.notFound,
   }
 },
+  delete: {
+  method: 'DELETE' as const,
+  path: '/api/tasks/:id' as const,
+  responses: {
+    200: z.custom<typeof maintenanceTasks.$inferSelect>(),
+    404: errorSchemas.notFound,
+  }
+},
   tasks: {
     list: {
       method: 'GET' as const,
