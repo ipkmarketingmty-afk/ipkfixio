@@ -1,15 +1,24 @@
-import { useMachines } from "@/hooks/use-machines";
+import { useState } from "react";
+import { useMachines, useDeleteMachine } from "@/hooks/use-machines";
 import { CreateMachineDialog } from "@/components/machines/CreateMachineDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Factory, MapPin, Trash2 } from "lucide-react";
-import { useMachines, useDeleteMachine } from "@/hooks/use-machines";
-import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Machines() {
   const { mutate: deleteMachine } = useDeleteMachine();
   const { data: machines, isLoading } = useMachines();
+
+  const [filters, setFilters] = useState({ name: "", type: "", brand: "", location: "" });
+
+  const filtered = machines?.filter(m =>
+    m.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+    m.type.toLowerCase().includes(filters.type.toLowerCase()) &&
+    (m.brand ?? "").toLowerCase().includes(filters.brand.toLowerCase()) &&
+    (m.location ?? "").toLowerCase().includes(filters.location.toLowerCase())
+  ) || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -39,16 +48,27 @@ export default function Machines() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pl-8">Nombre</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Tipo</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Marca / Modelo</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pr-8">Ubicación</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pr-8">Acción</TableHead>
-                
+                  <TableHead className="py-3 pl-8">
+                    <p className="font-bold text-[#1B263B] mb-1">Nombre</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.name} onChange={e => setFilters(f => ({ ...f, name: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Tipo</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.type} onChange={e => setFilters(f => ({ ...f, type: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Marca / Modelo</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.brand} onChange={e => setFilters(f => ({ ...f, brand: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Ubicación</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.location} onChange={e => setFilters(f => ({ ...f, location: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3 font-bold text-[#1B263B] pr-8">Acción</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {machines.map((machine) => (
+                {filtered.map((machine) => (
                   <TableRow key={machine.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="py-4 pl-8 font-bold text-[#1B263B]">{machine.name}</TableCell>
                     <TableCell className="py-4 text-muted-foreground">
@@ -69,15 +89,10 @@ export default function Machines() {
                       </div>
                     </TableCell>
                     <TableCell className="py-4 pr-8">
-  <Button
-    variant="ghost"
-    size="icon"
-    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-    onClick={() => deleteMachine(machine.id)}
-  >
-    <Trash2 className="w-4 h-4" />
-  </Button>
-</TableCell>
+                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => deleteMachine(machine.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
