@@ -54,32 +54,33 @@ export class DatabaseStorage implements IStorage {
   async createTask(insertTask: InsertTask): Promise<MaintenanceTask> {
   const { startDate, ...rest } = insertTask as any;
   
-  let baseDate = new Date();
+  let lastCompleted = new Date();
   
   if (startDate) {
     const inputDate = new Date(startDate);
     const now = new Date();
+    const freqDays = rest.frequencyDays;
     
     if (inputDate >= now) {
-      // Fecha futura: úsala directamente
-      baseDate = inputDate;
+      // Fecha futura: restar un ciclo para que el próximo sea exactamente esa fecha
+      const base = new Date(inputDate);
+      base.setDate(base.getDate() - freqDays);
+      lastCompleted = base;
     } else {
-      // Fecha pasada: calcular la próxima ocurrencia más cercana a hoy
-      const freqDays = rest.frequencyDays;
+      // Fecha pasada: avanzar ciclos hasta llegar al anterior a hoy
       let next = new Date(inputDate);
       while (next < now) {
         next.setDate(next.getDate() + freqDays);
       }
-      // Retroceder un ciclo para que lastCompletedDate quede en el ciclo anterior
       next.setDate(next.getDate() - freqDays);
-      baseDate = next;
+      lastCompleted = next;
     }
   }
 
   const [task] = await db.insert(maintenanceTasks).values({
     ...rest,
-    startDate: baseDate,
-    lastCompletedDate: baseDate,
+    startDate: lastCompleted,
+    lastCompletedDate: lastCompleted,
   }).returning();
   return task;
 }
