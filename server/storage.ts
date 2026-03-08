@@ -1,38 +1,88 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { 
+  machines, maintenanceTasks, maintenanceLogs,
+  type InsertMachine, type Machine,
+  type InsertTask, type MaintenanceTask,
+  type InsertLog, type MaintenanceLog
+} from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getMachines(): Promise<Machine[]>;
+  getMachine(id: number): Promise<Machine | undefined>;
+  createMachine(machine: InsertMachine): Promise<Machine>;
+
+  getTasks(): Promise<(MaintenanceTask & { machine?: Machine })[]>;
+  createTask(task: InsertTask): Promise<MaintenanceTask>;
+
+  getLogs(): Promise<(MaintenanceLog & { machine?: Machine; task?: MaintenanceTask })[]>;
+  createLog(log: InsertLog): Promise<MaintenanceLog>;
+  
+  updateTaskLastCompleted(taskId: number, date: Date): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getMachines(): Promise<Machine[]> {
+    return await db.select().from(machines);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getMachine(id: number): Promise<Machine | undefined> {
+    const [machine] = await db.select().from(machines).where(eq(machines.id, id));
+    return machine;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createMachine(insertMachine: InsertMachine): Promise<Machine> {
+    const [machine] = await db.insert(machines).values(insertMachine).returning();
+    return machine;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getTasks(): Promise<(MaintenanceTask & { machine?: Machine })[]> {
+    const tasks = await db.select().from(maintenanceTasks);
+    const machinesList = await this.getMachines();
+    const machineMap = new Map(machinesList.map(m => [m.id, m]));
+    return tasks.map(t => ({
+      ...t,
+      machine: machineMap.get(t.machineId)
+    }));
+  }
+
+  async createTask(insertTask: InsertTask): Promise<MaintenanceTask> {
+    const [task] = await db.insert(maintenanceTasks).values(insertTask).returning();
+    return task;
+  }
+
+  async getLogs(): Promise<(MaintenanceLog & { machine?: Machine; task?: MaintenanceTask })[]> {
+    const logs = await db.select().from(maintenanceLogs);
+    const machinesList = await this.getMachines();
+    const tasksList = await db.select().from(maintenanceTasks);
+    
+    const machineMap = new Map(machinesList.map(m => [m.id, m]));
+    const taskMap = new Map(tasksList.map(t => [t.id, t]));
+    
+    return logs.map(l => ({
+      ...l,
+      machine: machineMap.get(l.machineId),
+      task: taskMap.get(l.taskId)
+    }));
+  }
+
+  async createLog(insertLog: InsertLog): Promise<MaintenanceLog> {
+    const [log] = await db.insert(maintenanceLogs).values({
+      ...insertLog,
+      completedDate: new Date()
+    }).returning();
+    // When a log is created, we should also update the lastCompletedDate of the task
+    if (log.taskId) {
+      await this.updateTaskLastCompleted(log.taskId, log.completedDate);
+    }
+    return log;
+  }
+
+  async updateTaskLastCompleted(taskId: number, date: Date): Promise<void> {
+    await db.update(maintenanceTasks)
+      .set({ lastCompletedDate: date })
+      .where(eq(maintenanceTasks.id, taskId));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
