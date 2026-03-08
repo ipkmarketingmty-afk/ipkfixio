@@ -136,5 +136,15 @@ export async function registerRoutes(
     }
   });
 
+
+app.delete('/api/machines/:id', async (req, res) => {
+  const machine = await storage.getMachine(Number(req.params.id));
+  if (!machine) {
+    return res.status(404).json({ message: 'Machine not found' });
+  }
+  await storage.deleteMachine(Number(req.params.id));
+  res.json(machine);
+});
+  
   return httpServer;
 }
