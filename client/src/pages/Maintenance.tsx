@@ -3,59 +3,52 @@ import { useTasks } from "@/hooks/use-tasks";
 import { CreateTaskDialog } from "@/components/maintenance/CreateTaskDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wrench, Calendar, AlertCircle } from "lucide-react";
+import { Wrench, Calendar, AlertCircle, Trash2, Download } from "lucide-react";
 import { getTaskStatusInfo } from "@/lib/date-utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { useDeleteTask } from "@/hooks/use-tasks";
-import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Wrench, Calendar, AlertCircle, Trash2, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 export default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
   const { mutate: deleteTask } = useDeleteTask();
-  function exportarCSV() {
-  const encabezados = ["Máquina", "Tipo", "Tarea", "Frecuencia (días)", "Próximo Mantenimiento", "Estado"];
-  const filas = filtered.map(task => {
-    const statusInfo = getTaskStatusInfo(task.lastCompletedDate, task.frequencyDays);
-    return [
-      task.machine?.name ?? "",
-      task.machine?.type ?? "",
-      task.title,
-      task.frequencyDays,
-      format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es }),
-      statusInfo.label,
-    ];
-  });
-  const contenido = [encabezados, ...filas].map(fila => fila.join(",")).join("\n");
-  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "plan_mantenimiento.csv";
-  link.click();
-  URL.revokeObjectURL(url);
-}
-  
+
   const [filters, setFilters] = useState({ machine: "", task: "", status: "" });
-  
-  
-  
+
   const filtered = tasks?.filter(t =>
     (t.machine?.name ?? "").toLowerCase().includes(filters.machine.toLowerCase()) &&
     t.title.toLowerCase().includes(filters.task.toLowerCase()) &&
     (() => {
-  if (!filters.status) return true;
-  const statusInfo = getTaskStatusInfo(t.lastCompletedDate, t.frequencyDays);
-  const fechaFormateada = format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es });
-  return (
-    statusInfo.label.toLowerCase().includes(filters.status.toLowerCase()) ||
-    fechaFormateada.toLowerCase().includes(filters.status.toLowerCase())
-  );
-})()
+      if (!filters.status) return true;
+      const statusInfo = getTaskStatusInfo(t.lastCompletedDate, t.frequencyDays);
+      const fechaFormateada = format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es });
+      return (
+        statusInfo.label.toLowerCase().includes(filters.status.toLowerCase()) ||
+        fechaFormateada.toLowerCase().includes(filters.status.toLowerCase())
+      );
+    })()
   ) || [];
+
+  function exportarExcel() {
+    const filas = filtered.map(task => {
+      const statusInfo = getTaskStatusInfo(task.lastCompletedDate, task.frequencyDays);
+      return {
+        "Máquina": task.machine?.name ?? "",
+        "Tipo": task.machine?.type ?? "",
+        "Tarea": task.title,
+        "Frecuencia (días)": task.frequencyDays,
+        "Próximo Mantenimiento": format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es }),
+        "Estado": statusInfo.label,
+      };
+    });
+    const hoja = XLSX.utils.json_to_sheet(filas);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, "Plan de Mantenimiento");
+    XLSX.writeFile(libro, "plan_mantenimiento.xlsx");
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -65,12 +58,12 @@ export default function Maintenance() {
           <p className="text-muted-foreground mt-2 text-lg">Rutinas preventivas programadas para tus máquinas.</p>
         </div>
         <div className="flex gap-3">
-  <Button variant="outline" onClick={exportarCSV} className="rounded-xl px-6 h-12 text-base font-bold">
-    <Download className="w-5 h-5 mr-2" />
-    Exportar CSV
-  </Button>
-  <CreateTaskDialog />
-</div>
+          <Button variant="outline" onClick={exportarExcel} className="rounded-xl px-6 h-12 text-base font-bold">
+            <Download className="w-5 h-5 mr-2" />
+            Exportar Excel
+          </Button>
+          <CreateTaskDialog />
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-xl shadow-black/5 border border-border/50 overflow-hidden">
@@ -101,7 +94,7 @@ export default function Maintenance() {
                   </TableHead>
                   <TableHead className="py-3 font-bold text-[#1B263B]">
                     <p className="font-bold text-[#1B263B] mb-1">Frecuencia</p>
-                    <Input placeholder="Filtrar..." className="h-7 text-xs" disabled/>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" disabled />
                   </TableHead>
                   <TableHead className="py-3 pr-8">
                     <p className="font-bold text-[#1B263B] mb-1">Próximo Mantenimiento</p>
@@ -109,7 +102,7 @@ export default function Maintenance() {
                   </TableHead>
                   <TableHead className="py-3 pr-8">
                     <p className="font-bold text-[#1B263B] mb-1">Acción</p>
-                    </TableHead>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -141,15 +134,15 @@ export default function Maintenance() {
                           </span>
                         </div>
                       </TableCell>
-                       <TableCell className="py-5 pr-8">
-                      <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => deleteTask(task.id)}>
-                      <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
+                      <TableCell className="py-5 pr-8">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => deleteTask(task.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
