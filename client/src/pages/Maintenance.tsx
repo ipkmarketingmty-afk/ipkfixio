@@ -11,10 +11,34 @@ import { Input } from "@/components/ui/input";
 import { useDeleteTask } from "@/hooks/use-tasks";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Wrench, Calendar, AlertCircle, Trash2, Download } from "lucide-react";
 
 export default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
   const { mutate: deleteTask } = useDeleteTask();
+  function exportarCSV() {
+  const encabezados = ["Máquina", "Tipo", "Tarea", "Frecuencia (días)", "Próximo Mantenimiento", "Estado"];
+  const filas = filtered.map(task => {
+    const statusInfo = getTaskStatusInfo(task.lastCompletedDate, task.frequencyDays);
+    return [
+      task.machine?.name ?? "",
+      task.machine?.type ?? "",
+      task.title,
+      task.frequencyDays,
+      format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es }),
+      statusInfo.label,
+    ];
+  });
+  const contenido = [encabezados, ...filas].map(fila => fila.join(",")).join("\n");
+  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "plan_mantenimiento.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+  
   const [filters, setFilters] = useState({ machine: "", task: "", status: "" });
   
   
@@ -40,7 +64,13 @@ export default function Maintenance() {
           <h1 className="text-4xl font-black text-[#1B263B]">Plan de Mantenimiento</h1>
           <p className="text-muted-foreground mt-2 text-lg">Rutinas preventivas programadas para tus máquinas.</p>
         </div>
-        <CreateTaskDialog />
+        <div className="flex gap-3">
+  <Button variant="outline" onClick={exportarCSV} className="rounded-xl px-6 h-12 text-base font-bold">
+    <Download className="w-5 h-5 mr-2" />
+    Exportar CSV
+  </Button>
+  <CreateTaskDialog />
+</div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-xl shadow-black/5 border border-border/50 overflow-hidden">
