@@ -23,10 +23,14 @@ export default function Maintenance() {
     (t.machine?.name ?? "").toLowerCase().includes(filters.machine.toLowerCase()) &&
     t.title.toLowerCase().includes(filters.task.toLowerCase()) &&
     (() => {
-      if (!filters.status) return true;
-      const statusInfo = getTaskStatusInfo(t.lastCompletedDate, t.frequencyDays);
-      return statusInfo.label.toLowerCase().includes(filters.status.toLowerCase());
-    })()
+  if (!filters.status) return true;
+  const statusInfo = getTaskStatusInfo(t.lastCompletedDate, t.frequencyDays);
+  const fechaFormateada = format(statusInfo.nextDate, "d 'de' MMMM, yyyy", { locale: es });
+  return (
+    statusInfo.label.toLowerCase().includes(filters.status.toLowerCase()) ||
+    fechaFormateada.toLowerCase().includes(filters.status.toLowerCase())
+  );
+})()
   ) || [];
 
   return (
