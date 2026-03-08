@@ -70,7 +70,7 @@ export class DatabaseStorage implements IStorage {
       // Fecha pasada: avanzar ciclos hasta llegar al anterior a hoy
       let next = new Date(inputDate);
       while (next < now) {
-        next.setDate(next.getDate() + freqDays);
+        next.setDate(next.getDate() + freqDays+1);
       }
       next.setDate(next.getDate() - freqDays);
       lastCompleted = next;
