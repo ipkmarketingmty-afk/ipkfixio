@@ -60,6 +60,7 @@ export default function Maintenance() {
                     <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.task} onChange={e => setFilters(f => ({ ...f, task: e.target.value }))} />
                   </TableHead>
                   <TableHead className="py-3 font-bold text-[#1B263B]">Frecuencia</TableHead>
+                  <Input placeholder="Filtrar..." className="h-7 text-xs" />
                   <TableHead className="py-3 pr-8">
                     <p className="font-bold text-[#1B263B] mb-1">Próximo Mantenimiento</p>
                     <Input placeholder="Filtrar estado..." className="h-7 text-xs" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} />
