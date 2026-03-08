@@ -17,6 +17,7 @@ export const maintenanceTasks = pgTable("maintenance_tasks", {
   machineId: integer("machine_id").notNull(),
   title: text("title").notNull(),
   frequencyDays: integer("frequency_days").notNull(),
+  startDate: timestamp("start_date").defaultNow().notNull(),
   lastCompletedDate: timestamp("last_completed_date").defaultNow().notNull(),
 });
 
@@ -53,7 +54,9 @@ export const logsRelations = relations(maintenanceLogs, ({ one }) => ({
 }));
 
 export const insertMachineSchema = createInsertSchema(machines).omit({ id: true });
-export const insertTaskSchema = createInsertSchema(maintenanceTasks).omit({ id: true, lastCompletedDate: true });
+export const insertTaskSchema = createInsertSchema(maintenanceTasks)
+  .omit({ id: true, lastCompletedDate: true })
+  .extend({ startDate: z.string().optional() });
 export const insertLogSchema = createInsertSchema(maintenanceLogs).omit({ id: true, completedDate: true });
 
 export type Machine = typeof machines.$inferSelect;
