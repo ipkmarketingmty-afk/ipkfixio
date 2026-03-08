@@ -64,7 +64,7 @@ export class DatabaseStorage implements IStorage {
     if (inputDate >= now) {
       // Fecha futura: restar un ciclo para que el próximo sea exactamente esa fecha
       const base = new Date(inputDate);
-      base.setDate(base.getDate() - freqDays);
+      base.setDate(base.getDate() - freqDays+1);
       lastCompleted = base;
     } else {
       // Fecha pasada: avanzar ciclos hasta llegar al anterior a hoy
