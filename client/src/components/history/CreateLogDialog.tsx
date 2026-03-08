@@ -37,7 +37,16 @@ export function CreateLogDialog() {
   });
 
   const selectedMachineId = form.watch("machineId");
-  const filteredTasks = tasks?.filter(t => t.machineId === Number(selectedMachineId)) || [];
+  const filteredTasks = tasks?.filter(t => {
+  if (t.machineId !== Number(selectedMachineId)) return false;
+  
+  const lastCompleted = new Date(t.lastCompletedDate);
+  const nextDue = new Date(lastCompleted);
+  nextDue.setDate(lastCompleted.getDate() + t.frequencyDays);
+  
+  const diffDays = Math.ceil((nextDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return diffDays <= 8; // incluye vencidas (negativo) y próximas (0-7 días)
+}) || [];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createLog.mutate(values, {
