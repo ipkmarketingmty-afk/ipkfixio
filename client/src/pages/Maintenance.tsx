@@ -76,15 +76,6 @@ export default function Maintenance() {
                   <TableHead className="py-3 pr-8">
                     <p className="font-bold text-[#1B263B] mb-1">Acción</p>
                     </TableHead>
-                  <TableCell className="py-5 pr-8">
-                      <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => deleteTask(task.id)}>
-                      <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
