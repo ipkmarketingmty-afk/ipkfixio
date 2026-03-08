@@ -2,8 +2,8 @@ import { useMachines } from "@/hooks/use-machines";
 import { CreateMachineDialog } from "@/components/machines/CreateMachineDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Factory, MapPin } from "lucide-react";
-import { useDeleteMachine, useMachines } from "@/hooks/use-machines";
+import { Factory, MapPin, Trash2 } from "lucide-react";
+import { useMachines, useDeleteMachine } from "@/hooks/use-machines";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
