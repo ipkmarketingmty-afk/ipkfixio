@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertTaskSchema } from "@shared/schema";
 import { useCreateTask } from "@/hooks/use-tasks";
 import { useMachines } from "@/hooks/use-machines";
 import { useToast } from "@/hooks/use-toast";
@@ -13,11 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wrench, Plus } from "lucide-react";
 
-// Extend schema for the form to handle coerced numbers
 const formSchema = z.object({
   machineId: z.coerce.number().min(1, "Debe seleccionar una máquina"),
   title: z.string().min(2, "El nombre de la tarea es muy corto"),
   frequencyDays: z.coerce.number().min(1, "La frecuencia debe ser al menos 1 día"),
+  startDate: z.string().optional(),
 });
 
 export function CreateTaskDialog() {
@@ -32,6 +31,7 @@ export function CreateTaskDialog() {
       machineId: 0,
       title: "",
       frequencyDays: 30,
+      startDate: "",
     },
   });
 
@@ -122,6 +122,20 @@ export function CreateTaskDialog() {
                         días
                       </div>
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#1B263B] font-bold">Fecha de inicio <span className="text-muted-foreground font-normal">(Opcional)</span></FormLabel>
+                  <FormControl>
+                    <Input type="date" className="h-12 rounded-xl bg-muted/50 border-transparent focus:bg-white focus:border-primary focus:ring-primary/20" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
