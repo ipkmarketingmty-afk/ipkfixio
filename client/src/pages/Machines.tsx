@@ -8,6 +8,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Machines() {
+  const { mutate: deleteMachine } = useDeleteMachine();
   const { data: machines, isLoading } = useMachines();
 
   return (
@@ -42,6 +43,17 @@ export default function Machines() {
                   <TableHead className="py-5 font-bold text-[#1B263B]">Tipo</TableHead>
                   <TableHead className="py-5 font-bold text-[#1B263B]">Marca / Modelo</TableHead>
                   <TableHead className="py-5 font-bold text-[#1B263B] pr-8">Ubicación</TableHead>
+                  <TableHead className="py-5 pr-8"></TableHead>
+                  <TableCell className="py-4 pr-8">
+  <Button
+    variant="ghost"
+    size="icon"
+    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+    onClick={() => deleteMachine(machine.id)}
+  >
+    <Trash2 className="w-4 h-4" />
+  </Button>
+</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -65,6 +77,16 @@ export default function Machines() {
                         {machine.location}
                       </div>
                     </TableCell>
+                    <TableCell className="py-4 pr-8">
+  <Button
+    variant="ghost"
+    size="icon"
+    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+    onClick={() => deleteMachine(machine.id)}
+  >
+    <Trash2 className="w-4 h-4" />
+  </Button>
+</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
