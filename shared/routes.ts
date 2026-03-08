@@ -7,20 +7,6 @@ export const errorSchemas = {
   internal: z.object({ message: z.string() }),
 };
 
-
-
-delete: {
-  method: 'DELETE' as const,
-  path: '/api/machines/:id' as const,
-  responses: {
-    200: z.custom<typeof machines.$inferSelect>(),
-    404: errorSchemas.notFound,
-  }
-},
-
-
-
-
 export const api = {
   dashboard: {
     stats: {
@@ -61,6 +47,14 @@ export const api = {
       }
     }
   },
+  delete: {
+  method: 'DELETE' as const,
+  path: '/api/machines/:id' as const,
+  responses: {
+    200: z.custom<typeof machines.$inferSelect>(),
+    404: errorSchemas.notFound,
+  }
+},
   tasks: {
     list: {
       method: 'GET' as const,
