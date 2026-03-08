@@ -52,9 +52,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTask(insertTask: InsertTask): Promise<MaintenanceTask> {
-    const [task] = await db.insert(maintenanceTasks).values(insertTask).returning();
-    return task;
-  }
+  const { startDate, ...rest } = insertTask as any;
+  const [task] = await db.insert(maintenanceTasks).values({
+    ...rest,
+    startDate: startDate ? new Date(startDate) : new Date(),
+    lastCompletedDate: startDate ? new Date(startDate) : new Date(),
+  }).returning();
+  return task;
+}
 
   async getLogs(): Promise<(MaintenanceLog & { machine?: Machine; task?: MaintenanceTask })[]> {
     const logs = await db.select().from(maintenanceLogs);
