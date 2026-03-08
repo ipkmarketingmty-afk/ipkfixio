@@ -13,8 +13,11 @@ export interface IStorage {
   createMachine(machine: InsertMachine): Promise<Machine>;
   deleteMachine(id: number): Promise<void>;
   
+  getTask(id: number): Promise<MaintenanceTask | undefined>;
+  deleteTask(id: number): Promise<void>;
   getTasks(): Promise<(MaintenanceTask & { machine?: Machine })[]>;
   createTask(task: InsertTask): Promise<MaintenanceTask>;
+  
 
   getLogs(): Promise<(MaintenanceLog & { machine?: Machine; task?: MaintenanceTask })[]>;
   createLog(log: InsertLog): Promise<MaintenanceLog>;
@@ -85,6 +88,16 @@ export class DatabaseStorage implements IStorage {
   return task;
 }
 
+async getTask(id: number): Promise<MaintenanceTask | undefined> {
+  const [task] = await db.select().from(maintenanceTasks).where(eq(maintenanceTasks.id, id));
+  return task;
+}
+
+async deleteTask(id: number): Promise<void> {
+  await db.delete(maintenanceTasks).where(eq(maintenanceTasks.id, id));
+}
+  
+  
   async getLogs(): Promise<(MaintenanceLog & { machine?: Machine; task?: MaintenanceTask })[]> {
     const logs = await db.select().from(maintenanceLogs);
     const machinesList = await this.getMachines();
