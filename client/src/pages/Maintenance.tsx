@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { CreateTaskDialog } from "@/components/maintenance/CreateTaskDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,9 +7,21 @@ import { Wrench, Calendar, AlertCircle } from "lucide-react";
 import { getTaskStatusInfo } from "@/lib/date-utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
 
 export default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
+  const [filters, setFilters] = useState({ machine: "", task: "", status: "" });
+
+  const filtered = tasks?.filter(t =>
+    (t.machine?.name ?? "").toLowerCase().includes(filters.machine.toLowerCase()) &&
+    t.title.toLowerCase().includes(filters.task.toLowerCase()) &&
+    (() => {
+      if (!filters.status) return true;
+      const statusInfo = getTaskStatusInfo(t.lastCompletedDate, t.frequencyDays);
+      return statusInfo.label.toLowerCase().includes(filters.status.toLowerCase());
+    })()
+  ) || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -38,14 +51,23 @@ export default function Maintenance() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pl-8">Máquina</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Tarea</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Frecuencia</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pr-8">Próximo Mantenimiento</TableHead>
+                  <TableHead className="py-3 pl-8">
+                    <p className="font-bold text-[#1B263B] mb-1">Máquina</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.machine} onChange={e => setFilters(f => ({ ...f, machine: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Tarea</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.task} onChange={e => setFilters(f => ({ ...f, task: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3 font-bold text-[#1B263B]">Frecuencia</TableHead>
+                  <TableHead className="py-3 pr-8">
+                    <p className="font-bold text-[#1B263B] mb-1">Próximo Mantenimiento</p>
+                    <Input placeholder="Filtrar estado..." className="h-7 text-xs" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.map((task) => {
+                {filtered.map((task) => {
                   const statusInfo = getTaskStatusInfo(task.lastCompletedDate, task.frequencyDays);
                   return (
                     <TableRow key={task.id} className="hover:bg-muted/30 transition-colors">
