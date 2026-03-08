@@ -83,7 +83,14 @@ export async function registerRoutes(
   res.json(machine);
 });
 
-  
+  app.delete('/api/tasks/:id', async (req, res) => {
+  const task = await storage.getTask(Number(req.params.id));
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+  await storage.deleteTask(Number(req.params.id));
+  res.json(task);
+});
   
   app.get(api.tasks.list.path, async (req, res) => {
     const tasks = await storage.getTasks();
