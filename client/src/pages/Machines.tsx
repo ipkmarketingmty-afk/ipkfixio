@@ -43,7 +43,7 @@ export default function Machines() {
                   <TableHead className="py-5 font-bold text-[#1B263B]">Tipo</TableHead>
                   <TableHead className="py-5 font-bold text-[#1B263B]">Marca / Modelo</TableHead>
                   <TableHead className="py-5 font-bold text-[#1B263B] pr-8">Ubicación</TableHead>
-                  <TableHead className="py-5 pr-8"></TableHead>
+                
                   <TableCell className="py-4 pr-8">
   <Button
     variant="ghost"
