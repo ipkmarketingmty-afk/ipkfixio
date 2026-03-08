@@ -8,11 +8,17 @@ import { getTaskStatusInfo } from "@/lib/date-utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
+import { useDeleteTask } from "@/hooks/use-tasks";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
+  const { mutate: deleteTask } = useDeleteTask();
   const [filters, setFilters] = useState({ machine: "", task: "", status: "" });
-
+  
+  
+  
   const filtered = tasks?.filter(t =>
     (t.machine?.name ?? "").toLowerCase().includes(filters.machine.toLowerCase()) &&
     t.title.toLowerCase().includes(filters.task.toLowerCase()) &&
@@ -67,6 +73,18 @@ export default function Maintenance() {
                     <p className="font-bold text-[#1B263B] mb-1">Próximo Mantenimiento</p>
                     <Input placeholder="Filtrar estado..." className="h-7 text-xs" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} />
                   </TableHead>
+                  <TableHead className="py-3 pr-8">
+                    <p className="font-bold text-[#1B263B] mb-1">Acción</p>
+                    </TableHead>
+                  <TableCell className="py-5 pr-8">
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => deleteTask(task.id)}>
+                      <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -98,6 +116,15 @@ export default function Maintenance() {
                           </span>
                         </div>
                       </TableCell>
+                       <TableCell className="py-5 pr-8">
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => deleteTask(task.id)}>
+                      <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                     </TableRow>
                   );
                 })}
