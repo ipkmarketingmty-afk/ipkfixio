@@ -2,7 +2,7 @@
 cmds = ["npm ci --include=dev"]
 
 [phases.build]
-cmds = ["npm run build", "npm run db:push"]
+cmds = ["npm run build"]
 
 [start]
-cmd = "node dist/index.cjs"
+cmd = "npm run db:push && node dist/index.cjs"
