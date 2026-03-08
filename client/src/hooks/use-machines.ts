@@ -51,20 +51,3 @@ export function useDeleteMachine() {
     },
   });
 }
-export function useDeleteMachine() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/machines/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to delete machine");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.machines.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.dashboard.stats.path] });
-    },
-  });
-}
