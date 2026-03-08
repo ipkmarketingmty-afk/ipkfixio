@@ -3,6 +3,9 @@ import { CreateMachineDialog } from "@/components/machines/CreateMachineDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Factory, MapPin } from "lucide-react";
+import { useDeleteMachine, useMachines } from "@/hooks/use-machines";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Machines() {
   const { data: machines, isLoading } = useMachines();
