@@ -37,7 +37,7 @@ export function CreateLogDialog() {
   });
 
   const selectedMachineId = form.watch("machineId");
-  const filteredTasks = tasks?.filter(t => t.machineId === selectedMachineId) || [];
+  const filteredTasks = tasks?.filter(t => t.machineId === Number(selectedMachineId)) || [];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createLog.mutate(values, {
