@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLogs } from "@/hooks/use-logs";
 import { CreateLogDialog } from "@/components/history/CreateLogDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -5,9 +6,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
 
 export default function History() {
   const { data: logs, isLoading } = useLogs();
+  const [filters, setFilters] = useState({ date: "", machine: "", task: "", notes: "" });
+
+  const sorted = [...(logs || [])].sort((a, b) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime());
+
+  const filtered = sorted.filter(log =>
+    format(new Date(log.completedDate), "dd MMM, yyyy", { locale: es }).toLowerCase().includes(filters.date.toLowerCase()) &&
+    (log.machine?.name ?? "").toLowerCase().includes(filters.machine.toLowerCase()) &&
+    (log.task?.title ?? "").toLowerCase().includes(filters.task.toLowerCase()) &&
+    (log.notes ?? "").toLowerCase().includes(filters.notes.toLowerCase())
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -37,15 +49,26 @@ export default function History() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pl-8">Fecha</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Máquina</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B]">Tarea Realizada</TableHead>
-                  <TableHead className="py-5 font-bold text-[#1B263B] pr-8 w-1/3">Notas</TableHead>
+                  <TableHead className="py-3 pl-8">
+                    <p className="font-bold text-[#1B263B] mb-1">Fecha</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.date} onChange={e => setFilters(f => ({ ...f, date: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Máquina</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.machine} onChange={e => setFilters(f => ({ ...f, machine: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3">
+                    <p className="font-bold text-[#1B263B] mb-1">Tarea Realizada</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.task} onChange={e => setFilters(f => ({ ...f, task: e.target.value }))} />
+                  </TableHead>
+                  <TableHead className="py-3 pr-8 w-1/3">
+                    <p className="font-bold text-[#1B263B] mb-1">Notas</p>
+                    <Input placeholder="Filtrar..." className="h-7 text-xs" value={filters.notes} onChange={e => setFilters(f => ({ ...f, notes: e.target.value }))} />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Sort logs descending (newest first) by completedDate */}
-                {[...logs].sort((a, b) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime()).map((log) => (
+                {filtered.map((log) => (
                   <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="py-5 pl-8">
                       <div className="font-bold text-[#1B263B]">
