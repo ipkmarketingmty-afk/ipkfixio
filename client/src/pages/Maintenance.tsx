@@ -12,7 +12,7 @@ import { useDeleteTask } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 
-export default function Maintenance() {
+rt default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
   const { mutate: deleteTask } = useDeleteTask();
 
@@ -56,8 +56,7 @@ export default function Maintenance() {
         <div>
           <h1 className="text-4xl font-black text-[#1B263B]">Plan de Mantenimiento</h1>
           <p className="text-muted-foreground mt-2 text-lg">Rutinas preventivas programadas para tus máquinas.</p>
-        </div>
-        <div className="flex gap-3">
+        
           <Button variant="outline" onClick={exportarExcel} className="rounded-xl px-6 h-12 text-base font-bold">
             <Download className="w-5 h-5 mr-2" />
             Exportar Excel
