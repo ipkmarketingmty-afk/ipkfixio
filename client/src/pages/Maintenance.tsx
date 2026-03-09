@@ -12,7 +12,7 @@ import { useDeleteTask } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 
-rt default function Maintenance() {
+export default function Maintenance() {
   const { data: tasks, isLoading } = useTasks();
   const { mutate: deleteTask } = useDeleteTask();
 
